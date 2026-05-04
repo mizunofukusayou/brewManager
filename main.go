@@ -122,6 +122,10 @@ func getDB() (*sql.DB, error) {
 	// 接続確認
 	err = db.Ping()
 	if err != nil {
+		closeErr := db.Close()
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to ping database: %w (additionally failed to close database: %v)", err, closeErr)
+		}
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 	return db, nil
