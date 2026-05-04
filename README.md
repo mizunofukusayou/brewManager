@@ -1,0 +1,2 @@
+# brewManager
+homebrewでインストールしたパッケージをSQLiteで管理するアプリ
