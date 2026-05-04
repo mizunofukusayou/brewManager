@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 
 	_ "modernc.org/sqlite"
 )
@@ -22,26 +24,80 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// 2. テーブル作成（リレーションシップあり）
-	// まず categories を作り、次にそれを使う packages を作る
-	createTablesSQL := `
-	CREATE TABLE IF NOT EXISTS categories (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL UNIQUE
-	);
-
-	CREATE TABLE IF NOT EXISTS packages (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		category_id INTEGER NOT NULL,
-		notes TEXT,
-		FOREIGN KEY (category_id) REFERENCES categories(id)
-	);`
-
-	_, err = db.Exec(createTablesSQL)
-	if err != nil {
-		log.Fatal(err)
+	args := os.Args
+	if len(args) < 2{
+		log.Println("コマンドを指定してください。例: bm init")
+		return
 	}
 
-	fmt.Println("テーブルが作成されました。")
+	command := args[1]
+	switch command {
+		case "init":
+			// テーブル作成（リレーションシップあり）
+			// まず categories を作り、次にそれを使う packages を作る
+			createTablesSQL := `
+			CREATE TABLE IF NOT EXISTS categories (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				name TEXT NOT NULL UNIQUE
+			);
+		
+			CREATE TABLE IF NOT EXISTS packages (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				name TEXT NOT NULL,
+				category_id INTEGER NOT NULL,
+				notes TEXT,
+				FOREIGN KEY (category_id) REFERENCES categories(id)
+			);`
+		
+			_, err = db.Exec(createTablesSQL)
+			if err != nil {
+				log.Fatal(err)
+			}
+		
+			fmt.Println("テーブルが作成されました。")
+
+		case "add":
+			if len(args) < 3 {
+				fmt.Println("引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>")
+				return
+			}
+
+			switch args[2]{
+				case "category":
+					if len(args) < 4 {
+						fmt.Println("引数が足りません。例: bm add category <名前>")
+						return
+					}
+					name := args[3]
+					_, err = db.Exec("INSERT INTO categories (name) VALUES (?)", name)
+					if err != nil {
+						log.Println("failed to insert category:", err)
+						return
+					}
+
+				case "package":
+					if len(args) < 5 {
+						fmt.Println("引数が足りません。例: bm add package <パッケージ名> <カテゴリID>")
+						return
+					}
+					name := args[3]
+					categoryID, err := strconv.Atoi(args[4])
+					if err != nil {
+						fmt.Println("カテゴリIDは数値で指定してください。")
+						return
+					}
+					_, err = db.Exec("INSERT INTO packages (name, category_id) VALUES (?, ?)", name, categoryID)
+					if err != nil {
+						log.Println("failed to insert package:", err)
+						return
+					}
+
+				default:
+					fmt.Println("不明なサブコマンドです:", args[2])
+					return
+			}
+
+		default:
+			fmt.Println("不明なコマンドです:", command)
+	}
 }
