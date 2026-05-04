@@ -105,12 +105,12 @@ func run() error {
 			fmt.Printf("Added package: {name: %s, category_id: %d}\n", name, categoryID)
 
 		default:
-			return fmt.Errorf("%w:%sは不明なサブコマンドです:", usageError, args[2])
+			return fmt.Errorf("%w:%sは不明なサブコマンドです", usageError, args[2])
 
 		}
 
 	default:
-		return fmt.Errorf("%w:%sは不明なコマンドです:", usageError, args[1])
+		return fmt.Errorf("%w:%sは不明なコマンドです", usageError, args[1])
 	}
 	return nil
 }
