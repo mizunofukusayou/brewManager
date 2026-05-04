@@ -19,7 +19,7 @@ func main() {
 		if errors.Is(err, usageError) {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
-		}else {
+		} else {
 			log.Printf("Error: %v", err)
 			os.Exit(1)
 		}
@@ -31,20 +31,20 @@ func run() error {
 	if len(args) < 2 {
 		return fmt.Errorf("%w:コマンドを指定してください。例: bm init", usageError)
 	}
-	
+
 	// データベースファイルを開く（存在しない場合は作成される）
 	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 	defer db.Close()
-	
+
 	// 接続確認
 	err = db.Ping()
 	if err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
-	
+
 	command := args[1]
 	switch command {
 	case "init":
@@ -63,19 +63,19 @@ func run() error {
 				notes TEXT,
 				FOREIGN KEY (category_id) REFERENCES categories(id)
 			);`
-	
+
 		_, err = db.Exec(createTablesSQL)
 		if err != nil {
-			return fmt.Errorf("failed to create tables: %w", err) 
+			return fmt.Errorf("failed to create tables: %w", err)
 		}
 
 		fmt.Println("テーブルの初期化が完了しました。")
-	
+
 	case "add":
 		if len(args) < 3 {
 			return fmt.Errorf("%w:引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>", usageError)
 		}
-	
+
 		switch args[2] {
 		case "category":
 			if len(args) < 4 {
@@ -87,7 +87,7 @@ func run() error {
 				return fmt.Errorf("failed to insert category: %w", err)
 			}
 			fmt.Println("Added category:", name)
-	
+
 		case "package":
 			if len(args) < 5 {
 				return fmt.Errorf("%w:引数が足りません。例: bm add package <パッケージ名> <カテゴリID>", usageError)
@@ -103,12 +103,12 @@ func run() error {
 				return fmt.Errorf("failed to insert package: %w", err)
 			}
 			fmt.Printf("Added package: {name: %s, category_id: %d}\n", name, categoryID)
-	
+
 		default:
 			return fmt.Errorf("%w:%sは不明なサブコマンドです:", usageError, args[2])
 
 		}
-	
+
 	default:
 		return fmt.Errorf("%w:%sは不明なコマンドです:", usageError, args[1])
 	}
