@@ -26,8 +26,8 @@ func main() {
 
 	args := os.Args
 	if len(args) < 2 {
-		log.Println("コマンドを指定してください。例: bm init")
-		return
+		fmt.Fprintln(os.Stderr, "コマンドを指定してください。例: bm init")
+		os.Exit(2)
 	}
 
 	command := args[1]
@@ -54,50 +54,49 @@ func main() {
 			log.Fatal(err)
 		}
 
-		fmt.Println("テーブルが作成されました。")
-
 	case "add":
 		if len(args) < 3 {
-			fmt.Println("引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>")
-			return
+			fmt.Fprintln(os.Stderr, "引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>")
+			os.Exit(2)
 		}
 
 		switch args[2] {
 		case "category":
 			if len(args) < 4 {
-				fmt.Println("引数が足りません。例: bm add category <名前>")
-				return
+				fmt.Fprintln(os.Stderr, "引数が足りません。例: bm add category <名前>")
+				os.Exit(2)
 			}
 			name := args[3]
 			_, err = db.Exec("INSERT INTO categories (name) VALUES (?)", name)
 			if err != nil {
 				log.Println("failed to insert category:", err)
-				return
+				os.Exit(1)
 			}
 
 		case "package":
 			if len(args) < 5 {
-				fmt.Println("引数が足りません。例: bm add package <パッケージ名> <カテゴリID>")
-				return
+				fmt.Fprintln(os.Stderr, "引数が足りません。例: bm add package <パッケージ名> <カテゴリID>")
+				os.Exit(2)
 			}
 			name := args[3]
 			categoryID, err := strconv.Atoi(args[4])
 			if err != nil {
-				fmt.Println("カテゴリIDは数値で指定してください。")
-				return
+				fmt.Fprintln(os.Stderr, "カテゴリIDは数値で指定してください。")
+				os.Exit(2)
 			}
 			_, err = db.Exec("INSERT INTO packages (name, category_id) VALUES (?, ?)", name, categoryID)
 			if err != nil {
 				log.Println("failed to insert package:", err)
-				return
+				os.Exit(1)
 			}
 
 		default:
-			fmt.Println("不明なサブコマンドです:", args[2])
-			return
+			fmt.Fprintln(os.Stderr, "不明なサブコマンドです:", args[2])
+			os.Exit(2)
 		}
 
 	default:
-		fmt.Println("不明なコマンドです:", command)
+		fmt.Fprintln(os.Stderr, "不明なコマンドです:", command)
+		os.Exit(2)
 	}
 }
