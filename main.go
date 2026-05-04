@@ -2,46 +2,141 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
 
+var usageError = errors.New("usage error")
+
+func usageErrorMessage(err error) string {
+	msg := err.Error()
+	const prefix = "usage error:"
+	if strings.HasPrefix(msg, prefix) {
+		return strings.TrimSpace(strings.TrimPrefix(msg, prefix))
+	}
+	return msg
+}
+
 func main() {
+	err := run()
+	if err != nil {
+		if errors.Is(err, usageError) {
+			fmt.Fprintln(os.Stderr, usageErrorMessage(err))
+			os.Exit(2)
+		} else {
+			log.Printf("Error: %v", err)
+			os.Exit(1)
+		}
+	}
+}
+
+func run() error {
+	args := os.Args
+	if len(args) < 2 {
+		return fmt.Errorf("%w:コマンドを指定してください。例: bm init", usageError)
+	}
+
+	command := args[1]
+	switch command {
+	case "init":
+		db, err := getDB()
+		if err != nil {
+			return fmt.Errorf("failed to get database: %w", err)
+		}
+		defer db.Close()
+		// テーブル作成（リレーションシップあり）
+		// まず categories を作り、次にそれを使う packages を作る
+		createTablesSQL := `
+		CREATE TABLE IF NOT EXISTS categories (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL UNIQUE
+			);
+			
+			CREATE TABLE IF NOT EXISTS packages (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				name TEXT NOT NULL,
+				category_id INTEGER NOT NULL,
+				notes TEXT,
+				FOREIGN KEY (category_id) REFERENCES categories(id)
+				);`
+
+		_, err = db.Exec(createTablesSQL)
+		if err != nil {
+			return fmt.Errorf("failed to create tables: %w", err)
+		}
+
+		fmt.Println("テーブルの初期化が完了しました。")
+
+	case "add":
+		db, err := getDB()
+		if err != nil {
+			return fmt.Errorf("failed to get database: %w", err)
+		}
+		defer db.Close()
+		if len(args) < 3 {
+			return fmt.Errorf("%w:引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>", usageError)
+		}
+
+		switch args[2] {
+		case "category":
+			if len(args) < 4 {
+				return fmt.Errorf("%w:引数が足りません。例: bm add category <名前>", usageError)
+			}
+			name := args[3]
+			_, err = db.Exec("INSERT INTO categories (name) VALUES (?)", name)
+			if err != nil {
+				return fmt.Errorf("failed to insert category: %w", err)
+			}
+			fmt.Println("Added category:", name)
+
+		case "package":
+			if len(args) < 5 {
+				return fmt.Errorf("%w:引数が足りません。例: bm add package <パッケージ名> <カテゴリID>", usageError)
+			}
+			name := args[3]
+			var categoryID int
+			categoryID, err = strconv.Atoi(args[4])
+			if err != nil {
+				return fmt.Errorf("%w:カテゴリIDは数値で指定してください。", usageError)
+			}
+			_, err = db.Exec("INSERT INTO packages (name, category_id) VALUES (?, ?)", name, categoryID)
+			if err != nil {
+				return fmt.Errorf("failed to insert package: %w", err)
+			}
+			fmt.Printf("Added package: {name: %s, category_id: %d}\n", name, categoryID)
+
+		default:
+			return fmt.Errorf("%w:%sは不明なサブコマンドです", usageError, args[2])
+
+		}
+
+	default:
+		return fmt.Errorf("%w:%sは不明なコマンドです", usageError, args[1])
+	}
+	return nil
+}
+
+func getDB() (*sql.DB, error) {
 	// データベースファイルを開く（存在しない場合は作成される）
 	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	defer db.Close()
 
 	// 接続確認
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		closeErr := db.Close()
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to ping database: %w (additionally failed to close database: %v)", err, closeErr)
+		}
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-
-	// 2. テーブル作成（リレーションシップあり）
-	// まず categories を作り、次にそれを使う packages を作る
-	createTablesSQL := `
-	CREATE TABLE IF NOT EXISTS categories (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL UNIQUE
-	);
-
-	CREATE TABLE IF NOT EXISTS packages (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		category_id INTEGER NOT NULL,
-		notes TEXT,
-		FOREIGN KEY (category_id) REFERENCES categories(id)
-	);`
-
-	_, err = db.Exec(createTablesSQL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("テーブルが作成されました。")
+	return db, nil
 }
