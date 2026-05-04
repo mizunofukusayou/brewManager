@@ -11,6 +11,12 @@ import (
 )
 
 func main() {
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Fprintln(os.Stderr, "コマンドを指定してください。例: bm init")
+		os.Exit(2)
+	}
+
 	// データベースファイルを開く（存在しない場合は作成される）
 	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
 	if err != nil {
@@ -22,12 +28,6 @@ func main() {
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	args := os.Args
-	if len(args) < 2 {
-		fmt.Fprintln(os.Stderr, "コマンドを指定してください。例: bm init")
-		os.Exit(2)
 	}
 
 	command := args[1]
