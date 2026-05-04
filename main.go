@@ -7,17 +7,27 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
 
 var usageError = errors.New("usage error")
 
+func usageErrorMessage(err error) string {
+	msg := err.Error()
+	const prefix = "usage error:"
+	if strings.HasPrefix(msg, prefix) {
+		return strings.TrimSpace(strings.TrimPrefix(msg, prefix))
+	}
+	return msg
+}
+
 func main() {
 	err := run()
 	if err != nil {
 		if errors.Is(err, usageError) {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, usageErrorMessage(err))
 			os.Exit(2)
 		} else {
 			log.Printf("Error: %v", err)
