@@ -32,37 +32,29 @@ func run() error {
 		return fmt.Errorf("%w:コマンドを指定してください。例: bm init", usageError)
 	}
 
-	// データベースファイルを開く（存在しない場合は作成される）
-	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
-	if err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
-	}
-	defer db.Close()
-
-	// 接続確認
-	err = db.Ping()
-	if err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
-	}
-
 	command := args[1]
 	switch command {
 	case "init":
+		db, err := getDB()
+		if err != nil {
+			return fmt.Errorf("failed to get database: %w", err)
+		}
+		defer db.Close()
 		// テーブル作成（リレーションシップあり）
 		// まず categories を作り、次にそれを使う packages を作る
 		createTablesSQL := `
-			CREATE TABLE IF NOT EXISTS categories (
-				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				name TEXT NOT NULL UNIQUE
+		CREATE TABLE IF NOT EXISTS categories (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL UNIQUE
 			);
-		
+			
 			CREATE TABLE IF NOT EXISTS packages (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				name TEXT NOT NULL,
 				category_id INTEGER NOT NULL,
 				notes TEXT,
 				FOREIGN KEY (category_id) REFERENCES categories(id)
-			);`
+				);`
 
 		_, err = db.Exec(createTablesSQL)
 		if err != nil {
@@ -72,6 +64,11 @@ func run() error {
 		fmt.Println("テーブルの初期化が完了しました。")
 
 	case "add":
+		db, err := getDB()
+		if err != nil {
+			return fmt.Errorf("failed to get database: %w", err)
+		}
+		defer db.Close()
 		if len(args) < 3 {
 			return fmt.Errorf("%w:引数が足りません。例: bm add category <名前> または bm add package <パッケージ名> <カテゴリID>", usageError)
 		}
@@ -113,4 +110,19 @@ func run() error {
 		return fmt.Errorf("%w:%sは不明なコマンドです", usageError, args[1])
 	}
 	return nil
+}
+
+func getDB() (*sql.DB, error) {
+	// データベースファイルを開く（存在しない場合は作成される）
+	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	// 接続確認
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+	return db, nil
 }
