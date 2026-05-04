@@ -20,7 +20,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
 		}else {
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			log.Printf("Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -35,16 +35,15 @@ func run() error {
 	// データベースファイルを開く（存在しない場合は作成される）
 	db, err := sql.Open("sqlite", "brewmanager.db?_pragma=foreign_keys(1)")
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to open database: %w", err)
 	}
 	defer db.Close()
 	
 	// 接続確認
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to ping database: %w", err)
 	}
-	
 	
 	command := args[1]
 	switch command {
@@ -67,7 +66,7 @@ func run() error {
 	
 		_, err = db.Exec(createTablesSQL)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("failed to create tables: %w", err) 
 		}
 
 		fmt.Println("テーブルの初期化が完了しました。")
