@@ -69,6 +69,8 @@ func run() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		fmt.Println("テーブルの初期化が完了しました。")
 	
 	case "add":
 		if len(args) < 3 {
@@ -85,6 +87,7 @@ func run() error {
 			if err != nil {
 				return fmt.Errorf("failed to insert category: %w", err)
 			}
+			fmt.Println("Added category:", name)
 	
 		case "package":
 			if len(args) < 5 {
@@ -100,6 +103,7 @@ func run() error {
 			if err != nil {
 				return fmt.Errorf("failed to insert package: %w", err)
 			}
+			fmt.Printf("Added package: {name: %s, category_id: %d}\n", name, categoryID)
 	
 		default:
 			return fmt.Errorf("%w:不明なサブコマンドです:", usageError)
