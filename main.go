@@ -91,7 +91,8 @@ func run() error {
 				return fmt.Errorf("%w:引数が足りません。例: bm add package <パッケージ名> <カテゴリID>", usageError)
 			}
 			name := args[3]
-			categoryID, err := strconv.Atoi(args[4])
+			var categoryID int
+			categoryID, err = strconv.Atoi(args[4])
 			if err != nil {
 				return fmt.Errorf("%w:カテゴリIDは数値で指定してください。", usageError)
 			}
