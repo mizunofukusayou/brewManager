@@ -54,6 +54,12 @@ func run() error {
 			return err
 		}
 
+	case "list":
+		err := handleList(args)
+		if err != nil {
+			return err
+		}
+
 	default:
 		return fmt.Errorf("%w:%sは不明なコマンドです", usageError, args[1])
 	}

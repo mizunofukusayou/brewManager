@@ -23,3 +23,15 @@ func getDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
+
+type Category struct {
+	ID   int
+	Name string
+}
+
+type Package struct {
+	ID         int
+	Name       string
+	CategoryID int
+	Notes      string
+}
