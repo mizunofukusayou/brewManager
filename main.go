@@ -45,13 +45,13 @@ func run() error {
 	case "init":
 		err := handleInit()
 		if err != nil {
-			return fmt.Errorf("failed to initialize database: %w", err)
+			return err
 		}
 
 	case "add":
 		err := handleAdd(args)
 		if err != nil {
-			return fmt.Errorf("failed to add item: %w", err)
+			return err
 		}
 
 	default:
