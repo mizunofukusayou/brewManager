@@ -61,7 +61,7 @@ func handleList(args []string) error {
 		}
 
 	default:
-		return fmt.Errorf("unknown table name: %s", tableName)
+		return fmt.Errorf("%w: unknown table name: %s", usageError, tableName)
 	}
 
 	return nil
