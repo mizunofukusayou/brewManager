@@ -8,6 +8,7 @@ import (
 func handleGUI() error {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/api/getpackages", getPackages)
 
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
