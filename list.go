@@ -31,18 +31,22 @@ func handleList(args []string) error {
 			fmt.Printf("ID: %d, Name: %s\n", row.ID, row.Name)
 		}
 	case "packages":
-		rows, err := db.Query("SELECT * FROM packages")
+		rows, err := db.Query("SELECT packages.*, categories.name AS category_name FROM packages JOIN categories ON packages.category_id = categories.id")
 		if err != nil {
 			return fmt.Errorf("%sからの取得に失敗しました: %w", tableName, err)
 		}
 		defer rows.Close()
 		for rows.Next() {
-			var row Package
-			err := rows.Scan(&row.ID, &row.Name, &row.CategoryID, &row.Notes)
+			type Row struct{
+				Package
+				CategoryName string
+			}
+			var row Row
+			err := rows.Scan(&row.ID, &row.Name, &row.CategoryID, &row.Notes, &row.CategoryName)
 			if err != nil {
 				return fmt.Errorf("failed to scan package: %w", err)
 			}
-			fmt.Printf("ID: %d, Name: %s, Category ID: %d, Notes: %s\n", row.ID, row.Name, row.CategoryID, row.Notes)
+			fmt.Printf("ID: %d, Name: %s, Category: %s, Notes: %s\n", row.ID, row.Name, row.CategoryName, row.Notes)
 		}
 	default:
 		return fmt.Errorf("unknown table name: %s", tableName)
