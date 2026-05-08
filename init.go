@@ -21,7 +21,7 @@ func handleInit() error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
 			category_id INTEGER NOT NULL,
-			notes TEXT,
+			notes TEXT DEFAULT '',
 			FOREIGN KEY (category_id) REFERENCES categories(id)
 			);`
 
