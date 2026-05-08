@@ -48,6 +48,12 @@ func run() error {
 			return err
 		}
 
+	case "gui":
+		err := handleGUI()
+		if err != nil {
+			return err
+		}
+
 	case "add":
 		err := handleAdd(args)
 		if err != nil {
