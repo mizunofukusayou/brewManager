@@ -46,7 +46,11 @@ func handleList(args []string) error {
 			if err != nil {
 				return fmt.Errorf("failed to scan package: %w", err)
 			}
-			fmt.Printf("ID: %d, Name: %s, Category: %s, Notes: %s\n", row.ID, row.Name, row.CategoryName, row.Notes)
+			if row.Notes == "" {
+				fmt.Printf("ID: %d, Category: %s, Name: %s\n", row.ID, row.CategoryName, row.Name)
+			} else {
+				fmt.Printf("ID: %d, Category: %s, Name: %s, Notes: %s\n", row.ID, row.CategoryName, row.Name, row.Notes)
+			}
 		}
 	default:
 		return fmt.Errorf("unknown table name: %s", tableName)
