@@ -30,6 +30,10 @@ func handleList(args []string) error {
 			}
 			fmt.Printf("ID: %d, Name: %s\n", row.ID, row.Name)
 		}
+		if err := rows.Err(); err != nil {
+			return fmt.Errorf("データ取得中にエラーが発生しました: %w", err)
+		}
+
 	case "packages":
 		rows, err := db.Query("SELECT packages.*, categories.name AS category_name FROM packages JOIN categories ON packages.category_id = categories.id")
 		if err != nil {
@@ -37,7 +41,7 @@ func handleList(args []string) error {
 		}
 		defer rows.Close()
 		for rows.Next() {
-			type Row struct{
+			type Row struct {
 				Package
 				CategoryName string
 			}
@@ -52,6 +56,10 @@ func handleList(args []string) error {
 				fmt.Printf("ID: %d, Category: %s, Name: %s, Notes: %s\n", row.ID, row.CategoryName, row.Name, row.Notes)
 			}
 		}
+		if err := rows.Err(); err != nil {
+			return fmt.Errorf("データ取得中にエラーが発生しました: %w", err)
+		}
+
 	default:
 		return fmt.Errorf("unknown table name: %s", tableName)
 	}
