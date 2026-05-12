@@ -17,7 +17,7 @@ export default function ListPackages() {
             setError(null);
             try {
                 const response = await fetch(
-                    "http://localhost:5173/api/getpackages",
+                    "/api/getpackages",
                 );
                 if (!response.ok) {
                     throw new Error("データ取得に失敗しました");
