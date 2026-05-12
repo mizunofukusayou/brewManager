@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func handleGUI() error {
@@ -10,7 +11,16 @@ func handleGUI() error {
 
 	mux.HandleFunc("/api/getpackages", getPackages)
 
-	err := http.ListenAndServe(":8080", mux)
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout: 30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout: 15 * time.Second,
+	}
+
+	err := server.ListenAndServe()
 	if err != nil {
 		return fmt.Errorf("GUIサーバーの起動に失敗しました: %w", err)
 	}
