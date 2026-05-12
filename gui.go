@@ -12,12 +12,12 @@ func handleGUI() error {
 	mux.HandleFunc("/api/getpackages", getPackages)
 
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
+		Addr:              ":8080",
+		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout: 30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout: 15 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       15 * time.Second,
 	}
 
 	err := server.ListenAndServe()
