@@ -53,7 +53,7 @@ func handleGUI() error {
 		return fmt.Errorf("サーバーで予期せぬエラーが発生しました: %w", err)
 	}
 	if err == http.ErrServerClosed {
-		return fmt.Errorf("サーバーが正常終了しました: %w", err)
+		return nil
 	}
 	return nil
 }
