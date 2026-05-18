@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"net"
 	"net/http"
 	"time"
 )
@@ -27,9 +28,17 @@ func handleGUI() error {
 		IdleTimeout:       15 * time.Second,
 	}
 
-	err := server.ListenAndServe()
+	ln, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
-		return fmt.Errorf("GUIサーバーの起動に失敗しました: %w", err)
+		return fmt.Errorf("ポートの確保に失敗しました: %w", err)
+	}
+	fmt.Println("👀 access http://127.0.0.1:8080")
+	err = server.Serve(ln)
+	if err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("サーバーで予期せぬエラーが発生しました: %w", err)
+	}
+	if err == http.ErrServerClosed {
+		return fmt.Errorf("サーバーが正常終了しました: %w", err)
 	}
 	return nil
 }
