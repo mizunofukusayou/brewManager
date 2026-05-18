@@ -1,14 +1,21 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"time"
 )
 
+//go:embed frontend/dist/*
+var frontend embed.FS
+
 func handleGUI() error {
 	mux := http.NewServeMux()
 
+	subFS, err := fs.Sub(frontend, "frontend/dist")
+	mux.Handle("/", http.FileServer(http.FS(subFS)))
 	mux.HandleFunc("/api/getpackages", getPackages)
 
 	server := &http.Server{
