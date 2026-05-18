@@ -16,8 +16,8 @@ func handleGUI() error {
 	mux := http.NewServeMux()
 
 	subFS, err := fs.Sub(frontend, "frontend/dist")
-	mux.Handle("/", http.FileServer(http.FS(subFS)))
-	mux.HandleFunc("/api/getpackages", getPackages)
+	mux.Handle("GET /", http.FileServer(http.FS(subFS)))
+	mux.HandleFunc("GET /api/getpackages", getPackages)
 
 	server := &http.Server{
 		Addr:              "127.0.0.1:8080",
