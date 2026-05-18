@@ -2,14 +2,27 @@
 homebrewでインストールしたパッケージをSQLiteで管理するアプリ
 
 ## 使い方
-1. パスを通す
+1. frontendのビルド
+```sh
+cd frontend
+npm install
+npm run build
+```
+
+2. Goアプリのビルド
+```sh
+cd ..
+go build -o bm
+```
+
+3. パスを通す
 インストールしたディレクトリのパスを通し、ターミナルで`bm`コマンドが使えるようにします。
 以下のコマンドを.zshrcなどのシェルの設定ファイルに追加してください。
 ```sh
-export PATH="$PATH:/{インストールしたディレクトリのパス}"
+echo "export PATH=\"$PATH:$(pwd)\"" >> ~/.zshrc
 ```
 
-2. アプリの初期化
+4. アプリの初期化
 ターミナルで以下のコマンドを実行して、アプリを初期化します。
 ```sh
 bm init
