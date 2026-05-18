@@ -5,17 +5,9 @@ import (
 	"net/http"
 )
 
-func getPackages(w http.ResponseWriter, r *http.Request) {
-	db, err := getDB()
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(ErrorResponse{"データベースの読み込みに失敗しました"})
-		return
-	}
-	defer db.Close()
+func (a *api) getPackages(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := db.Query("SELECT packages.ID, categories.name AS category_name, packages.name, packages.notes FROM packages JOIN categories ON packages.category_id = categories.id")
+	rows, err := a.db.Query("SELECT packages.ID, categories.name AS category_name, packages.name, packages.notes FROM packages JOIN categories ON packages.category_id = categories.id")
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)

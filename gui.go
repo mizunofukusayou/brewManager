@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -12,12 +13,23 @@ import (
 //go:embed frontend/dist/*
 var frontend embed.FS
 
+type api struct {
+	db *sql.DB
+}
+
 func handleGUI() error {
+	db, err := getDB()
+	if err != nil {
+		return fmt.Errorf("データベースの読み込みに失敗しました: %w", err)
+	}
+	defer db.Close()
+	a := &api{db: db}
+
 	mux := http.NewServeMux()
 
 	subFS, err := fs.Sub(frontend, "frontend/dist")
 	mux.Handle("GET /", http.FileServer(http.FS(subFS)))
-	mux.HandleFunc("GET /api/getpackages", getPackages)
+	mux.HandleFunc("GET /api/getpackages", a.getPackages)
 
 	server := &http.Server{
 		Addr:              "127.0.0.1:8080",
