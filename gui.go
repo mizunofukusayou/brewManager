@@ -28,6 +28,9 @@ func handleGUI() error {
 	mux := http.NewServeMux()
 
 	subFS, err := fs.Sub(frontend, "frontend/dist")
+	if err != nil {
+		return fmt.Errorf("フロントエンドのファイルシステムの準備に失敗しました: %w", err)
+	}
 	mux.Handle("GET /", http.FileServer(http.FS(subFS)))
 	mux.HandleFunc("GET /api/getpackages", a.getPackages)
 
