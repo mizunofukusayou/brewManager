@@ -33,6 +33,7 @@ func handleGUI() error {
 	}
 	mux.Handle("GET /", http.FileServer(http.FS(subFS)))
 	mux.HandleFunc("GET /api/getpackages", a.getPackages)
+	mux.HandleFunc("POST /api/add", a.apiAdd)
 
 	server := &http.Server{
 		Addr:              "127.0.0.1:8080",
